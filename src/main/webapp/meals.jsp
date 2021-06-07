@@ -7,29 +7,39 @@
     <title>Meals</title>
 </head>
 <body>
-    <h2><a href="http://localhost:8080/topjava">Home</a></h2>
-    <br>
-    <h2>Meals</h2>
+<h3><a href="http://localhost:8080/topjava">Home</a></h3>
+<hr>
+<h3>Meals</h3>
 
-    <table>
-        <tr>
-            <th>Date</th>
-            <th>Description</th>
-            <th>Calories</th>
+<a href="meals?action=add">Add Meal</a>
+
+<table>
+    <tr>
+        <th>Date</th>
+        <th>Description</th>
+        <th>Calories</th>
+        <th>Id</th>
+        <th></th>
+        <th></th>
+    </tr>
+    <jsp:useBean id="mealsWithExcess" scope="request" type="java.util.List"/>
+    <c:forEach items="${mealsWithExcess}" var="meal">
+        <c:set var="tr_class" value="tr_ordinary"/>
+        <c:set var="date" value="${meal.getDateTime()}"/>
+        <c:if test="${meal.isExcess()}">
+            <c:set var="tr_class" value="tr_excess"/>
+        </c:if>
+        <tr class="${tr_class}">
+            <td>${f:formatLocalDateTime(date, 'yyyy-MM-dd HH:mm')}</td>
+            <td>${meal.getDescription()}</td>
+            <td>${meal.getCalories()}</td>
+            <td>${meal.getId()}</td>
+            <td>
+                <a href="meals?action=edit&mealId=<c:out value="${meal.getId()}"/>">Update</a>
+            </td>
+            <td><a href="meals?action=delete&mealId=<c:out value="${meal.getId()}"/>">Delete</a></td>
         </tr>
-        <jsp:useBean id="mealsWithExcess" scope="request" type="java.util.List"/>
-        <c:forEach items="${mealsWithExcess}" var="meal">
-            <c:set var="tr_class" value="tr_ordinary"/>
-            <c:set var="date" value="${meal.getDateTime()}"/>
-            <c:if test="${meal.isExcess()}" >
-               <c:set var="tr_class" value="tr_excess"/>
-            </c:if>
-            <tr class="${tr_class}">
-                <td>${f:formatLocalDateTime(date, 'yyyy-MM-dd HH:mm')}</td>
-                <td>${meal.getDescription()}</td>
-                <td>${meal.getCalories()}</td>
-            </tr>
-        </c:forEach>
-    </table>
+    </c:forEach>
+</table>
 </body>
 </html>
