@@ -18,26 +18,19 @@
         <th>Date</th>
         <th>Description</th>
         <th>Calories</th>
-        <th>Id</th>
         <th></th>
         <th></th>
     </tr>
     <jsp:useBean id="mealsWithExcess" scope="request" type="java.util.List"/>
     <c:forEach items="${mealsWithExcess}" var="meal">
-        <c:set var="tr_class" value="tr_ordinary"/>
-        <c:set var="date" value="${meal.getDateTime()}"/>
-        <c:if test="${meal.isExcess()}">
-            <c:set var="tr_class" value="tr_excess"/>
-        </c:if>
-        <tr class="${tr_class}">
-            <td>${f:formatLocalDateTime(date, 'yyyy-MM-dd HH:mm')}</td>
-            <td>${meal.getDescription()}</td>
-            <td>${meal.getCalories()}</td>
-            <td>${meal.getId()}</td>
+        <tr class="${meal.excess ? "tr_excess" : "tr_ordinary"}">
+            <td>${f:formatLocalDateTime(meal.getDateTime(), 'yyyy-MM-dd HH:mm')}</td>
+            <td>${meal.description}</td>
+            <td>${meal.calories}</td>
             <td>
-                <a href="meals?action=edit&mealId=<c:out value="${meal.getId()}"/>">Update</a>
+                <a href="meals?action=edit&mealId=${meal.id}">Update</a>
             </td>
-            <td><a href="meals?action=delete&mealId=<c:out value="${meal.getId()}"/>">Delete</a></td>
+            <td><a href="meals?action=delete&mealId=${meal.id}">Delete</a></td>
         </tr>
     </c:forEach>
 </table>
