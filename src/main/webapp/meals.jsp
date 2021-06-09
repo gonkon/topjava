@@ -24,7 +24,7 @@
     <jsp:useBean id="mealsWithExcess" scope="request" type="java.util.List"/>
     <c:forEach items="${mealsWithExcess}" var="meal">
         <tr class="${meal.excess ? "tr_excess" : "tr_ordinary"}">
-            <td>${f:formatLocalDateTime(meal.getDateTime(), 'yyyy-MM-dd HH:mm')}</td>
+            <td>${f:formatLocalDateTime(meal.getDateTime())}</td>
             <td>${meal.description}</td>
             <td>${meal.calories}</td>
             <td>

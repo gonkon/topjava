@@ -2,12 +2,12 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
-    <title>Add / Edit meal</title>
+    <title>${meal.id == null ? "Add meal" : "Edit meal"}</title>
 </head>
 <body>
     <h3><a href="index.html">Home</a></h3>
     <hr>
-    <h3>Add / Edit / Delete meal</h3>
+    <h3>${meal.id == null ? "Add meal" : "Edit meal"}</h3>
 
     <form method="post" action='meals' name="frmAddMeal" accept-charset="UTF-8">
         <table>
@@ -24,7 +24,7 @@
                 <td><input type="number" name="calories" value="${meal.calories}"/><br></td>
             </tr>
         </table>
-        <input type="hidden" name="mealId" value="${mealId}"/>
+        <input type="hidden" name="mealId" value="${meal.id}"/>
         <button type="submit" value="Submit">Save</button>
         <button type="reset" value="Reset">Cancel</button>
     </form>
