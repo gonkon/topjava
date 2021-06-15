@@ -29,37 +29,45 @@ public class InMemoryMealRepository implements MealRepository {
             meal.setUserId(userId);
             repository.put(meal.getId(), meal);
             return meal;
+        } else {
+            if (!checkUserId(repository.get(meal.getId()), userId)) return null;
         }
         // handle case: update, but not present in storage
-        if (!meal.checkUserId(userId)) return null;
         return repository.computeIfPresent(meal.getId(), (id, oldMeal) -> meal);
     }
 
     @Override
     public boolean delete(int id, int userId) {
-        return repository.get(id).checkUserId(userId) && repository.remove(id) != null;
+        return checkUserId(repository.getOrDefault(id, null), userId) && repository.remove(id) != null;
     }
 
     @Override
     public Meal get(int id, int userId) {
-        Meal meal = repository.get(id);
-        return meal.checkUserId(userId) ? meal : null;
+        Meal meal = repository.getOrDefault(id, null);
+        return checkUserId(meal, userId) ? meal : null;
     }
 
     @Override
-    public List<Meal> getAll(int userId, LocalDate dateMin, LocalDate dateMax) {
-        return repository.values().stream()
-                .filter(meal -> meal.checkUserId(userId) && meal.checkInDates(dateMin, dateMax))
-                .sorted(Comparator.comparing(Meal::getDateTime).reversed())
+    public List<Meal> getAllDates(int userId, LocalDate dateMin, LocalDate dateMax) {
+        return getAll(userId).stream()
+                .filter(meal -> checkInDates(meal, dateMin, dateMax))
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<Meal> getAll(int userId) {
         return repository.values().stream()
-                .filter(meal -> meal.checkUserId(userId))
+                .filter(meal -> checkUserId(meal, userId))
                 .sorted(Comparator.comparing(Meal::getDateTime).reversed())
                 .collect(Collectors.toList());
+    }
+
+    public boolean checkUserId(Meal meal, int userId) {
+        return meal.getUserId() == userId;
+    }
+
+    public boolean checkInDates(Meal meal, LocalDate dateMin, LocalDate dateMax) {
+        return meal.getDate().compareTo(dateMin) >= 0 && dateMax.compareTo(meal.getDate()) >= 0;
     }
 }
 

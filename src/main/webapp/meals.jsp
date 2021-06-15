@@ -33,23 +33,24 @@
         <h3 class="text-center">Meals</h3>
         <div class="card border-dark">
             <div class="card-body pb-0">
-                <form id="filter" method="post" action="meals?action=filter">
+                <form id="filter" method="get">
+                    <input type="hidden" name="action" value="filter">
                     <div class="row">
                         <div class="col-2">
                             <label for="startDate">From date (inclusive)</label>
-                            <input class="form-control" name="startDate" id="startDate" autocomplete="off">
+                            <input type="date" class="form-control" name="startDate" id="startDate" autocomplete="off">
                         </div>
                         <div class="col-2">
                             <label for="endDate">To date (inclusive)</label>
-                            <input class="form-control" name="endDate" id="endDate" autocomplete="off">
+                            <input type="date" class="form-control" name="endDate" id="endDate" autocomplete="off">
                         </div>
                         <div class="offset-2 col-3">
                             <label for="startTime">From time (inclusive)</label>
-                            <input class="form-control" name="startTime" id="startTime" autocomplete="off">
+                            <input type="time" class="form-control" name="startTime" id="startTime" autocomplete="off">
                         </div>
                         <div class="col-3">
                             <label for="endTime">To time (exclusive)</label>
-                            <input class="form-control" name="endTime" id="endTime" autocomplete="off">
+                            <input type="time" class="form-control" name="endTime" id="endTime" autocomplete="off">
                         </div>
                     </div>
                     <div class="card-footer text-right">

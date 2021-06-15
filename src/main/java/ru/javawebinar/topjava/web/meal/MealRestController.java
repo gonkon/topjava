@@ -1,5 +1,7 @@
 package ru.javawebinar.topjava.web.meal;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import ru.javawebinar.topjava.model.Meal;
@@ -16,44 +18,44 @@ import static ru.javawebinar.topjava.util.ValidationUtil.assureIdConsistent;
 
 @Controller
 public class MealRestController {
-    private int userId;
+    private static final Logger log = LoggerFactory.getLogger(MealRestController.class);
 
     @Autowired
     private MealService service;
 
     public List<MealTo> getAll() {
-        userId = SecurityUtil.authUserId();
-        return MealsUtil.getTos(service.getAll(userId), MealsUtil.DEFAULT_CALORIES_PER_DAY);
+        log.info("getAll");
+        return MealsUtil.getTos(service.getAll(SecurityUtil.authUserId()), MealsUtil.DEFAULT_CALORIES_PER_DAY);
     }
 
-    public List<MealTo> getAll(String timeMin, String timeMax, String dateMin, String dateMax) {
-        userId = SecurityUtil.authUserId();
-        LocalTime timeMinLT = timeMin == "" ? LocalTime.MIN : LocalTime.parse(timeMin);
-        LocalTime timeMaxLT = timeMax == "" ? LocalTime.MAX : LocalTime.parse(timeMax);
-        LocalDate dateMinLD = dateMin == "" ? LocalDate.MIN : LocalDate.parse(dateMin);
-        LocalDate dateMaxLD = dateMax == "" ? LocalDate.MAX : LocalDate.parse(dateMax);
-        return MealsUtil.getFilteredTos(service.getAll(userId, dateMinLD, dateMaxLD), MealsUtil.DEFAULT_CALORIES_PER_DAY, timeMinLT, timeMaxLT);
+    public List<MealTo> getAllDateTime(LocalTime timeMin, LocalTime timeMax, LocalDate dateMin, LocalDate dateMax) {
+        log.info("getAllDateTime");
+        LocalTime timeMinLT = timeMin == null ? LocalTime.MIN : timeMin;
+        LocalTime timeMaxLT = timeMax == null ? LocalTime.MAX : timeMax;
+        LocalDate dateMinLD = dateMin == null ? LocalDate.MIN : dateMin;
+        LocalDate dateMaxLD = dateMax == null ? LocalDate.MAX : dateMax;
+        return MealsUtil.getFilteredTos(service.getAllDates(SecurityUtil.authUserId(), dateMinLD, dateMaxLD), MealsUtil.DEFAULT_CALORIES_PER_DAY, timeMinLT, timeMaxLT);
     }
 
     public Meal get(int id) {
-        userId = SecurityUtil.authUserId();
-        return service.get(id, userId);
+        log.info("get id {}", id);
+        return service.get(id, SecurityUtil.authUserId());
     }
 
     public Meal create(Meal meal) {
-        userId = SecurityUtil.authUserId();
-        return service.create(meal, userId);
+        log.info("create {}", meal);
+        return service.create(meal, SecurityUtil.authUserId());
     }
 
     public void delete(int id) {
-        userId = SecurityUtil.authUserId();
-        service.delete(id, userId);
+        log.info("delete {}", id);
+        service.delete(id, SecurityUtil.authUserId());
     }
 
-    public void update(Meal meal) {
-        userId = SecurityUtil.authUserId();
-        assureIdConsistent(meal, userId);
-        service.update(meal, userId);
+    public void update(Meal meal, int id) {
+        log.info("update {}, id {}", meal, id);
+        meal.setUserId(SecurityUtil.authUserId());
+        assureIdConsistent(meal, id);
+        service.update(meal, SecurityUtil.authUserId());
     }
-
 }

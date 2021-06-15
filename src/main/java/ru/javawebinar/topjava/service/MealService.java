@@ -22,10 +22,10 @@ public class MealService {
         return repository.getAll(userId);
     }
 
-    public List<Meal> getAll(int userId, LocalDate dateMin, LocalDate dateMax) {
+    public List<Meal> getAllDates(int userId, LocalDate dateMin, LocalDate dateMax) {
         dateMin = dateMin == null ? LocalDate.MIN : dateMin;
         dateMax = dateMax == null ? LocalDate.MAX : dateMax;
-        return repository.getAll(userId, dateMin, dateMax);
+        return repository.getAllDates(userId, dateMin, dateMax);
     }
 
     public Meal get(int id, int userId) {
