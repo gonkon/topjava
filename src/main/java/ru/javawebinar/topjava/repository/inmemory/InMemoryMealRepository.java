@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Repository
@@ -30,39 +31,46 @@ public class InMemoryMealRepository implements MealRepository {
             repository.put(meal.getId(), meal);
             return meal;
         } else {
-            if (!checkUserId(repository.get(meal.getId()), userId)) return null;
+            if (!containsUserId(repository.get(meal.getId()), userId)) return null;
         }
         // handle case: update, but not present in storage
+        meal.setUserId(userId);
         return repository.computeIfPresent(meal.getId(), (id, oldMeal) -> meal);
     }
 
     @Override
     public boolean delete(int id, int userId) {
-        return checkUserId(repository.getOrDefault(id, null), userId) && repository.remove(id) != null;
+        return containsUserId(repository.get(id), userId) && repository.remove(id) != null;
     }
 
     @Override
     public Meal get(int id, int userId) {
         Meal meal = repository.getOrDefault(id, null);
-        return checkUserId(meal, userId) ? meal : null;
+        return containsUserId(meal, userId) ? meal : null;
     }
 
     @Override
-    public List<Meal> getAllDates(int userId, LocalDate dateMin, LocalDate dateMax) {
-        return getAll(userId).stream()
-                .filter(meal -> checkInDates(meal, dateMin, dateMax))
-                .collect(Collectors.toList());
+    public List<Meal> getAllBetweenDates(int userId, LocalDate dateMin, LocalDate dateMax) {
+        return filterByPredicate(userId, meal -> checkInDates(meal, dateMin, dateMax));
     }
 
     @Override
     public List<Meal> getAll(int userId) {
+        return filterByPredicate(userId, meal -> true);
+    }
+
+    public List<Meal> filterByPredicate(int userId, Predicate<Meal> filter) {
         return repository.values().stream()
-                .filter(meal -> checkUserId(meal, userId))
+                .filter(meal -> containsUserId(meal, userId))
+                .filter(filter)
                 .sorted(Comparator.comparing(Meal::getDateTime).reversed())
                 .collect(Collectors.toList());
     }
 
-    public boolean checkUserId(Meal meal, int userId) {
+    public boolean containsUserId(Meal meal, int userId) {
+        if (meal == null) {
+            return false;
+        }
         return meal.getUserId() == userId;
     }
 

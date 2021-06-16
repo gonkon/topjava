@@ -22,10 +22,8 @@ public class MealService {
         return repository.getAll(userId);
     }
 
-    public List<Meal> getAllDates(int userId, LocalDate dateMin, LocalDate dateMax) {
-        dateMin = dateMin == null ? LocalDate.MIN : dateMin;
-        dateMax = dateMax == null ? LocalDate.MAX : dateMax;
-        return repository.getAllDates(userId, dateMin, dateMax);
+    public List<Meal> getAllBetweenDates(int userId, LocalDate dateMin, LocalDate dateMax) {
+        return repository.getAllBetweenDates(userId, dateMin, dateMax);
     }
 
     public Meal get(int id, int userId) {

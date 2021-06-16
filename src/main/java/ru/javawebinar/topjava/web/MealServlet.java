@@ -28,9 +28,6 @@ public class MealServlet extends HttpServlet {
     public void init() {
         appCtx = new ClassPathXmlApplicationContext("spring/spring-app.xml");
         log.info("Bean definition names: " + Arrays.toString(appCtx.getBeanDefinitionNames()));
-//            AdminRestController adminUserController = appCtx.getBean(AdminRestController.class);
-//            adminUserController.create(new User(null, "admin", "email3@mail.ru", "password", Role.ADMIN));
-//            adminUserController.create(new User(null, "user", "email2@mail.ru", "password", Role.USER));
         controller = appCtx.getBean(MealRestController.class);
     }
 
@@ -45,11 +42,6 @@ public class MealServlet extends HttpServlet {
         String action = request.getParameter("action");
 
         switch (action == null ? "" : action) {
-            case "user_select":
-                SecurityUtil.setAuthUserId(Integer.parseInt(request.getParameter("user")));
-                request.setAttribute("meals", controller.getAll());
-                request.getRequestDispatcher("/meals.jsp").forward(request, response);
-                break;
             case "":
             default:
                 String id = request.getParameter("id");

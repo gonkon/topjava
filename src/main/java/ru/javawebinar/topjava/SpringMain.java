@@ -15,9 +15,14 @@ public class SpringMain {
         try (ConfigurableApplicationContext appCtx = new ClassPathXmlApplicationContext("spring/spring-app.xml")) {
             System.out.println("Bean definition names: " + Arrays.toString(appCtx.getBeanDefinitionNames()));
             AdminRestController adminUserController = appCtx.getBean(AdminRestController.class);
-            adminUserController.create(new User(null, "userName1", "email3@mail.ru", "password", Role.ADMIN));
+            User user1 = new User(null, "userName1", "email3@mail.ru", "password", Role.ADMIN);
+            User user2 = new User(null, "userName2", "email3@mail.ru", "password", Role.ADMIN);
+
+            adminUserController.create(user1);
             adminUserController.create(new User(null, "userName1", "email2@mail.ru", "password", Role.USER));
             adminUserController.create(new User(null, "userName1", "email1@mail.ru", "password", Role.USER));
+
+            adminUserController.update(user2, user1.getId());
 
             System.out.println(adminUserController.get(3));
 
