@@ -22,7 +22,7 @@ import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
 import static ru.javawebinar.topjava.UserTestData.USER_ID;
 
 @ContextConfiguration({
-        "classpath:spring/spring-app.xml",
+        "classpath:spring/spring-base.xml",
         "classpath:spring/spring-db.xml"
 })
 @RunWith(SpringRunner.class)
@@ -72,8 +72,8 @@ public class MealServiceTest {
 
     @Test
     public void getBetweenInclusive() {
-        List<Meal> meals_list = service.getBetweenInclusive(START_DATE, END_DATE, USER_ID);
-        assertMatch(meals_list, userMeal4, userMeal3, userMeal2);
+        List<Meal> mealsList = service.getBetweenInclusive(START_DATE, END_DATE, USER_ID);
+        assertMatch(mealsList, userMeal4, userMeal3, userMeal2);
     }
 
     @Test

@@ -13,11 +13,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static ru.javawebinar.topjava.model.AbstractBaseEntity.START_SEQ;
 
 public class MealTestData {
-    public static int MEAL_ID_1 = START_SEQ + 2;
-    public static int MEAL_ID_2 = START_SEQ + 3;
-    public static int MEAL_ID_3 = START_SEQ + 4;
-    public static int MEAL_ID_4 = START_SEQ + 5;
-    public static int MEAL_ID_5 = START_SEQ + 6;
+    public static final int MEAL_ID_1 = START_SEQ + 2;
+    public static final int MEAL_ID_2 = START_SEQ + 3;
+    public static final int MEAL_ID_3 = START_SEQ + 4;
+    public static final int MEAL_ID_4 = START_SEQ + 5;
+    public static final int MEAL_ID_5 = START_SEQ + 6;
     public static final int NOT_FOUND = 10;
     public static final LocalDate START_DATE = LocalDate.of(2021, Month.JANUARY, 30);
     public static final LocalDate END_DATE = LocalDate.of(2021, Month.JANUARY, 30);
@@ -28,7 +28,7 @@ public class MealTestData {
     public static final Meal userMeal4 = new Meal(MEAL_ID_4, LocalDateTime.of(2021, Month.JANUARY, 30, 20, 0), "Ужин", 500);
     public static final Meal userMeal5 = new Meal(MEAL_ID_5, LocalDateTime.of(2021, Month.JANUARY, 31, 20, 0), "Ужин", 410);
 
-    public static final List<Meal> allUserMeals = new ArrayList<Meal>(Arrays.asList(userMeal5, userMeal4, userMeal3, userMeal2, userMeal1));
+    public static final List<Meal> allUserMeals = Arrays.asList(userMeal5, userMeal4, userMeal3, userMeal2, userMeal1);
 
     public static void assertMatch(Meal actual, Meal expected) {
         assertThat(actual).usingRecursiveComparison().isEqualTo(expected);
