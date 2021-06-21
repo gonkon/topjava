@@ -12,24 +12,19 @@ import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.javawebinar.topjava.MealTestData;
 import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.util.Util;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.util.Comparator;
 import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertThrows;
 import static ru.javawebinar.topjava.MealTestData.*;
+import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
+import static ru.javawebinar.topjava.UserTestData.USER_ID;
 
 @ContextConfiguration({
         "classpath:spring/spring-app.xml",
         "classpath:spring/spring-db.xml"
 })
-
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 public class MealServiceTest {
@@ -45,75 +40,80 @@ public class MealServiceTest {
 
     @Test
     public void get() {
-        Meal meal = service.get(MEAL_ID, USER_ID);
-        assertMatch(meal, MealTestData.meals.get(MEAL_ID));
+        Meal meal = service.get(MEAL_ID_1, USER_ID);
+        assertMatch(meal, userMeal1);
     }
 
     @Test
     public void getNotFound() {
-        Assert.assertThrows(NotFoundException.class, () -> service.get(MEAL_ID, ADMIN_ID));
+        Assert.assertThrows(NotFoundException.class, () -> service.get(MEAL_ID_1, ADMIN_ID));
+    }
+
+    @Test
+    public void getMealNotFound() {
+        Assert.assertThrows(NotFoundException.class, () -> service.get(MealTestData.NOT_FOUND, USER_ID));
     }
 
     @Test
     public void delete() {
-        service.delete(MEAL_ID, USER_ID);
-        assertThrows(NotFoundException.class, () -> service.get(MEAL_ID, USER_ID));
+        service.delete(MEAL_ID_1, USER_ID);
+        assertThrows(NotFoundException.class, () -> service.get(MEAL_ID_1, USER_ID));
     }
 
     @Test
     public void deleteNotFound() {
-        assertThrows(NotFoundException.class, () -> service.delete(MEAL_ID, ADMIN_ID));
+        assertThrows(NotFoundException.class, () -> service.delete(MEAL_ID_1, ADMIN_ID));
+    }
+
+    @Test
+    public void deleteMealNotFound() {
+        Assert.assertThrows(NotFoundException.class, () -> service.delete(MealTestData.NOT_FOUND, USER_ID));
     }
 
     @Test
     public void getBetweenInclusive() {
         List<Meal> meals_list = service.getBetweenInclusive(START_DATE, END_DATE, USER_ID);
-        List<Meal> expected_meals = filterByPredicate(meal -> Util.isBetweenHalfOpen(meal.getDateTime().toLocalDate(), START_DATE, END_DATE.plusDays(1)));
-        assertMatch(meals_list, expected_meals);
+        assertMatch(meals_list, userMeal4, userMeal3, userMeal2);
+    }
+
+    @Test
+    public void getBetweenInclusiveFilterIsNull() {
+        List<Meal> meals_list = service.getBetweenInclusive(null, null, USER_ID);
+        assertMatch(meals_list, allUserMeals);
     }
 
     @Test
     public void getAll() {
         List<Meal> meals_list = service.getAll(USER_ID);
-        List<Meal> expected_meals = filterByPredicate(meal -> true);
-        assertMatch(meals_list, expected_meals);
+        assertMatch(meals_list, allUserMeals);
     }
 
     @Test
     public void update() {
-        Meal updated = getUpdated();
+        Meal updated = MealTestData.getUpdated();
         service.update(updated, USER_ID);
-        assertMatch(service.get(updated.getId(), USER_ID), updated);
+        assertMatch(service.get(updated.getId(), USER_ID), MealTestData.getUpdated());
     }
 
     @Test
     public void updateNotFound() {
-        Meal updated = getUpdated();
+        Meal updated = MealTestData.getUpdated();
         assertThrows(NotFoundException.class, () -> service.update(updated, ADMIN_ID));
     }
 
     @Test
     public void create() {
-        Meal createdMeal = service.create(getNew(), USER_ID);
+        Meal createdMeal = service.create(MealTestData.getNew(), USER_ID);
         int createdId = createdMeal.getId();
-        Meal newMeal = getNew();
+        Meal newMeal = MealTestData.getNew();
         newMeal.setId(createdId);
         assertMatch(createdMeal, newMeal);
         assertMatch(service.get(createdId, USER_ID), newMeal);
     }
 
     @Test
-    public void createDuplicateDate() {
-        Meal duplicateMeal = new Meal(LocalDateTime.of(2021, Month.JANUARY, 29, 10, 0), "Завтрак", 500);
+    public void duplicateDateTimeCreate() {
+        Meal duplicateMeal = new Meal(userMeal1.getDateTime(), "Завтрак", 500);
         assertThrows(DataAccessException.class, () -> service.create(duplicateMeal, USER_ID));
     }
-
-
-    private List<Meal> filterByPredicate(Predicate<Meal> filter) {
-        return meals.values().stream()
-                .filter(filter)
-                .sorted(Comparator.comparing(Meal::getDateTime).reversed())
-                .collect(Collectors.toList());
-    }
-
 }
