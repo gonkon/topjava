@@ -1,6 +1,11 @@
 package ru.javawebinar.topjava.service;
 
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -13,6 +18,8 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertThrows;
 import static ru.javawebinar.topjava.MealTestData.*;
@@ -26,6 +33,37 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 public class MealServiceTest {
+
+    private static long testStartTime, allTestStartTime, elapsedTime;
+    private static Map<String, Long> testTimingTable = new HashMap<>();
+
+    @Rule
+    public TestName name = new TestName();
+
+    @Rule
+    public TestWatcher watchman = new TestWatcher() {
+        protected void starting(Description description) {
+            testStartTime = System.currentTimeMillis();
+        }
+
+        protected void finished(Description description) {
+            elapsedTime = System.currentTimeMillis() - testStartTime;
+            System.out.println(name.getMethodName() + " elapsed time: " + (elapsedTime) + "ms");
+            testTimingTable.put(name.getMethodName(), elapsedTime);
+        }
+    };
+
+    @ClassRule
+    public static TestWatcher classWatchman = new TestWatcher() {
+        protected void starting(Description description) {
+            allTestStartTime = System.currentTimeMillis();
+        }
+
+        protected void finished(Description description) {
+            testTimingTable.forEach((name, time) -> System.out.println(name + " : " + time));
+            System.out.println("All tests elapsed time: " + (System.currentTimeMillis() - allTestStartTime) + "ms");
+        }
+    };
 
     @Autowired
     private MealService service;
