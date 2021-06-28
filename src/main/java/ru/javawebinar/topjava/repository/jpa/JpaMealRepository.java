@@ -22,17 +22,13 @@ public class JpaMealRepository implements MealRepository {
     @Transactional
     public Meal save(Meal meal, int userId) {
         User user = em.getReference(User.class, userId);
+        meal.setUser(user);
         if (meal.isNew()) {
-            meal.setUser(user);
             em.persist(meal);
         } else {
-            if (em.createNamedQuery(Meal.UPDATE)
-                    .setParameter("id", meal.id())
-                    .setParameter("userId", userId)
-                    .setParameter("dateTime", meal.getDateTime())
-                    .setParameter("description", meal.getDescription())
-                    .setParameter("calories", meal.getCalories())
-                    .executeUpdate() == 0) {
+            if (em.find(Meal.class, meal.id()).getUser().id() == userId) {
+                return em.merge(meal);
+            } else {
                 return null;
             }
         }
@@ -42,25 +38,25 @@ public class JpaMealRepository implements MealRepository {
     @Override
     @Transactional
     public boolean delete(int id, int userId) {
-        Meal mealToDelete = get(id, userId);
-        if (mealToDelete != null) {
-            em.remove(mealToDelete);
-            return true;
-        }
-        return false;
-//        return em.createNamedQuery(Meal.DELETE)
-//                .setParameter("id", id)
-//                .setParameter("userId", userId)
-//                .executeUpdate() != 0;
+//        Meal mealToDelete = get(id, userId);
+//        if (mealToDelete != null) {
+//            em.remove(mealToDelete);
+//            return true;
+//        }
+//        return false;
+        return em.createNamedQuery(Meal.DELETE)
+                .setParameter("id", id)
+                .setParameter("userId", userId)
+                .executeUpdate() != 0;
     }
 
     @Override
     public Meal get(int id, int userId) {
-        return (Meal) em.createNamedQuery(Meal.BY_ID, Meal.class)
-                .setParameter("id", id)
-                .setParameter("userId", userId)
-                .getResultList().stream()
-                .findFirst().orElse(null);
+        Meal meal = em.find(Meal.class, id);
+        if (meal == null || meal.getUser().id() != userId) {
+            return null;
+        }
+        return meal;
     }
 
     @Override
