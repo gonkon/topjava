@@ -26,7 +26,8 @@ public class JpaMealRepository implements MealRepository {
         if (meal.isNew()) {
             em.persist(meal);
         } else {
-            if (em.find(Meal.class, meal.id()).getUser().id() == userId) {
+            Meal mealToUpdate = em.find(Meal.class, meal.id());
+            if (mealToUpdate != null && mealToUpdate.getUser().id() == userId) {
                 return em.merge(meal);
             } else {
                 return null;
@@ -38,12 +39,6 @@ public class JpaMealRepository implements MealRepository {
     @Override
     @Transactional
     public boolean delete(int id, int userId) {
-//        Meal mealToDelete = get(id, userId);
-//        if (mealToDelete != null) {
-//            em.remove(mealToDelete);
-//            return true;
-//        }
-//        return false;
         return em.createNamedQuery(Meal.DELETE)
                 .setParameter("id", id)
                 .setParameter("userId", userId)
