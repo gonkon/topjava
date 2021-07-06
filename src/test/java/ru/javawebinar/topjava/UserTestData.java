@@ -24,8 +24,9 @@ public class UserTestData {
     }
 
     public static User getUserWithMeals() {
-        user.setMeals(MealTestData.meals);
-        return user;
+        User userWithMeals = new User(user);
+        userWithMeals.setMeals(MealTestData.meals);
+        return userWithMeals;
     }
 
     public static User getUpdated() {
