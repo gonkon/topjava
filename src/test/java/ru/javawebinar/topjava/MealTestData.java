@@ -12,7 +12,7 @@ import static ru.javawebinar.topjava.model.AbstractBaseEntity.START_SEQ;
 
 public class MealTestData {
     public static final MatcherFactory<Meal> MATCHER = MatcherFactory.usingIgnoringFieldsComparator("user");
-    public static final MatcherFactory<Meal> MATCHER_MEAL = MatcherFactory.usingIgnoringFieldsComparator("user.meals", "user.registered");
+    public static final MatcherFactory<Meal> MATCHER_WITH_USER = MatcherFactory.usingIgnoringFieldsComparator("user.meals", "user.registered");
 
     public static final int NOT_FOUND = 10;
     public static final int MEAL1_ID = START_SEQ + 2;
