@@ -112,6 +112,13 @@
     </build>
 
     <dependencies>
+        <!-- Mapper for One-To-Many Relationship-->
+<!--        <dependency>-->
+<!--            <groupId>org.simpleflatmapper</groupId>-->
+<!--            <artifactId>sfm-springjdbc-jre9</artifactId>-->
+<!--            <version>8.2.3</version>-->
+<!--        </dependency>-->
+
         <!-- Logging with SLF4J & LogBack -->
         <dependency>
             <groupId>org.slf4j</groupId>
