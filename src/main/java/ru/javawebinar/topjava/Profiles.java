@@ -4,7 +4,6 @@ import org.springframework.util.ClassUtils;
 
 public class Profiles {
     public static final String
-            TESTING_NO_CACHE = "testing",
             JDBC = "jdbc",
             JPA = "jpa",
             DATAJPA = "datajpa";

@@ -15,6 +15,10 @@ import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validation;
+import javax.validation.Validator;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
@@ -25,32 +29,27 @@ public class JdbcUserRepository implements UserRepository {
 
     private static final BeanPropertyRowMapper<User> ROW_MAPPER = BeanPropertyRowMapper.newInstance(User.class);
 
-    //    private static final ResultSetExtractor<List<User>> MAPPER_WITH_ROLES = JdbcTemplateMapperFactory
-//            .newInstance()
-//            .addKeys("id")
-//            .newResultSetExtractor(User.class);
     private static final ResultSetExtractor<List<User>> MAPPER_WITH_ROLES = rs -> {
-            Map<Integer, User> result = new HashMap<>();
-            while (rs.next()) {
-                Integer userId = rs.getInt("id");
-                User user = result.getOrDefault(userId, new User());
-                if (user.isNew()) {
-                    user.setId(userId);
-                    user.setName(rs.getString("name"));
-                    user.setEmail(rs.getString("email"));
-                    user.setPassword(rs.getString("password"));
-                    user.setCaloriesPerDay(rs.getInt("calories_per_day"));
-                    user.setEnabled(rs.getBoolean("enabled"));
-                    result.put(userId, user);
-                }
+        Map<Integer, User> result = new HashMap<>();
+        User user = new User();
+        while (rs.next()) {
+            Integer userId = rs.getInt("id");
+            if (result.get(userId) == null) {
+                user = ROW_MAPPER.mapRow(rs, 0);
+                result.put(userId, user);
+            }
+            if (rs.getString("role") != null) {
                 Role role = Role.valueOf(rs.getString("role"));
                 if (user.getRoles() == null) {
                     user.setRoles(Set.of(role));
                 } else {
                     user.getRoles().add(role);
                 }
+            } else {
+                user.setRoles(Collections.emptySet());
             }
-            return new ArrayList<>(result.values());
+        }
+        return new ArrayList<>(result.values());
     };
 
     private final JdbcTemplate jdbcTemplate;
@@ -74,9 +73,20 @@ public class JdbcUserRepository implements UserRepository {
     public User save(User user) {
         BeanPropertySqlParameterSource parameterSource = new BeanPropertySqlParameterSource(user);
 
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        if (!violations.isEmpty()) {
+            violations.forEach(element -> {
+                throw new ConstraintViolationException(element.getMessage(), violations);
+            });
+        }
+
         if (user.isNew()) {
             Number newKey = insertUser.executeAndReturnKey(parameterSource);
             user.setId(newKey.intValue());
+            batchInsertRoles(user);
+            return user;
         } else if (namedParameterJdbcTemplate.update("""
                    UPDATE users SET name=:name, email=:email, password=:password, 
                    registered=:registered, enabled=:enabled, calories_per_day=:caloriesPerDay WHERE id=:id
@@ -84,10 +94,9 @@ public class JdbcUserRepository implements UserRepository {
             return null;
         }
         jdbcTemplate.update("DELETE FROM user_roles WHERE user_id=?", user.id());
-        batchInsertRoles(new ArrayList<>(user.getRoles()), user.id());
+        batchInsertRoles(user);
         return user;
     }
-
 
     @Override
     @Transactional
@@ -98,8 +107,8 @@ public class JdbcUserRepository implements UserRepository {
     @Override
     public User get(int id) {
         List<User> users = jdbcTemplate.query("""
-                SELECT u.id, u.name, u.email, u.password, u.calories_per_day, u.enabled, r.role
-                FROM users u JOIN user_roles r ON r.user_id=u.id WHERE u.id=? ORDER BY u.id
+                SELECT u.id, u.name, u.email, u.password, u.calories_per_day, u.enabled, u.registered, r.role
+                FROM users u LEFT JOIN user_roles r ON r.user_id=u.id WHERE u.id=?
                 """, MAPPER_WITH_ROLES, id);
         return DataAccessUtils.singleResult(users);
     }
@@ -108,44 +117,36 @@ public class JdbcUserRepository implements UserRepository {
     public User getByEmail(String email) {
 //        return jdbcTemplate.queryForObject("SELECT * FROM users WHERE email=?", ROW_MAPPER, email);
         List<User> users = jdbcTemplate.query("""
-                SELECT u.id, u.name, u.email, u.password, u.calories_per_day, u.enabled, r.role 
-                FROM users u LEFT JOIN user_roles r ON u.id=r.user_id WHERE u.email=? ORDER BY u.id
+                SELECT u.id, u.name, u.email, u.password, u.calories_per_day, u.enabled, u.registered, r.role 
+                FROM users u LEFT JOIN user_roles r ON u.id=r.user_id WHERE u.email=?
                 """, MAPPER_WITH_ROLES, email);
         return DataAccessUtils.singleResult(users);
     }
 
     @Override
     public List<User> getAll() {
-        return jdbcTemplate.query("SELECT * FROM users ORDER BY name, email", ROW_MAPPER);
+        return jdbcTemplate.query("""
+                SELECT u.id, u.name, u.email, u.password, u.calories_per_day, u.enabled, u.registered, r.role
+                FROM users u LEFT JOIN user_roles r ON u.id=r.user_id ORDER BY name, email
+                """, MAPPER_WITH_ROLES);
     }
 
-    private int[] batchInsertRoles(List<Role> roles, int user_id) {
-        return this.jdbcTemplate.batchUpdate(
-                "INSERT INTO user_roles (user_id, role) VALUES (?, ?)",
-                new BatchPreparedStatementSetter() {
-                    public void setValues(PreparedStatement ps, int i) throws SQLException {
-                        ps.setInt(1, user_id);
-                        ps.setString(2, roles.get(i).toString());
-                    }
+    private void batchInsertRoles(User user) {
+        if (!user.getRoles().isEmpty()) {
+            List<Role> roles = new ArrayList<>(user.getRoles());
+            jdbcTemplate.batchUpdate(
+                    "INSERT INTO user_roles (user_id, role) VALUES (?, ?)",
+                    new BatchPreparedStatementSetter() {
+                        public void setValues(PreparedStatement ps, int i) throws SQLException {
+                            ps.setInt(1, user.id());
+                            ps.setString(2, roles.get(i).name());
+                        }
 
-                    public int getBatchSize() {
-                        return roles.size();
+                        public int getBatchSize() {
+                            return roles.size();
+                        }
                     }
-                });
-    }
-
-    private int[] batchUpdateRoles(List<Role> roles, int user_id) {
-        return this.jdbcTemplate.batchUpdate(
-                "UPDATE user_roles SET role = ? where user_id = ?",
-                new BatchPreparedStatementSetter() {
-                    public void setValues(PreparedStatement ps, int i) throws SQLException {
-                        ps.setString(1, roles.get(i).toString());
-                        ps.setInt(2, user_id);
-                    }
-
-                    public int getBatchSize() {
-                        return roles.size();
-                    }
-                });
+            );
+        }
     }
 }

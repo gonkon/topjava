@@ -1,6 +1,5 @@
 package ru.javawebinar.topjava.service;
 
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +9,6 @@ import org.springframework.test.context.ActiveProfiles;
 import ru.javawebinar.topjava.UserTestData;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
-import ru.javawebinar.topjava.repository.JpaUtil;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import javax.validation.ConstraintViolationException;
@@ -19,10 +17,9 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertThrows;
-import static ru.javawebinar.topjava.Profiles.TESTING_NO_CACHE;
 import static ru.javawebinar.topjava.UserTestData.*;
 
-@ActiveProfiles(TESTING_NO_CACHE)
+@ActiveProfiles
 public abstract class AbstractUserServiceTest extends AbstractServiceTest {
 
     @Autowired
@@ -31,14 +28,10 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
     @Autowired
     private CacheManager cacheManager;
 
-    @Autowired(required = false)
-    protected JpaUtil jpaUtil;
-
     @Before
     public void setup() {
-        cacheManager.getCache("users").clear();
-        if (jpaUtil != null) {
-            jpaUtil.clear2ndLevelHibernateCache();
+        if (!(cacheManager instanceof org.springframework.cache.support.NoOpCacheManager)) {
+            cacheManager.getCache("users").clear();
         }
     }
 
@@ -47,6 +40,16 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
         User created = service.create(getNew());
         int newId = created.id();
         User newUser = getNew();
+        newUser.setId(newId);
+        MATCHER.assertMatch(created, newUser);
+        MATCHER.assertMatch(service.get(newId), newUser);
+    }
+
+    @Test
+    public void createWithoutRoles() {
+        User created = service.create(getWithoutRoles());
+        int newId = created.id();
+        User newUser = getWithoutRoles();
         newUser.setId(newId);
         MATCHER.assertMatch(created, newUser);
         MATCHER.assertMatch(service.get(newId), newUser);
@@ -87,6 +90,18 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
     }
 
     @Test
+    public void getUserWithoutRoles() {
+        User user = service.get(USER_WITHOUT_ROLES_ID);
+        MATCHER.assertMatch(user, user_without_roles);
+    }
+
+    @Test
+    public void getByEmailUserWithoutRoles() {
+        User user = service.getByEmail("user@mail.ru");
+        MATCHER.assertMatch(user, user_without_roles);
+    }
+
+    @Test
     public void update() {
         User updated = getUpdated();
         service.update(updated);
@@ -96,12 +111,12 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
     @Test
     public void getAll() {
         List<User> all = service.getAll();
-        MATCHER_ALL.assertMatch(all, admin, user);
+        MATCHER.assertMatch(all, admin, user, user_without_roles);
     }
 
     @Test
     public void createWithException() throws Exception {
-        Assume.assumeTrue(!isJdbc());
+//        Assume.assumeFalse(isJdbc());
         validateRootCause(ConstraintViolationException.class, () -> service.create(new User(null, "  ", "mail@yandex.ru", "password", Role.USER)));
         validateRootCause(ConstraintViolationException.class, () -> service.create(new User(null, "User", "  ", "password", Role.USER)));
         validateRootCause(ConstraintViolationException.class, () -> service.create(new User(null, "User", "mail@yandex.ru", "  ", Role.USER)));

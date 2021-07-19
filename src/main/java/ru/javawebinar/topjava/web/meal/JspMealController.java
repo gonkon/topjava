@@ -1,17 +1,12 @@
 package ru.javawebinar.topjava.web.meal;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.service.MealService;
-import ru.javawebinar.topjava.util.MealsUtil;
-import ru.javawebinar.topjava.web.SecurityUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
@@ -22,39 +17,26 @@ import java.util.Objects;
 
 import static ru.javawebinar.topjava.util.DateTimeUtil.parseLocalDate;
 import static ru.javawebinar.topjava.util.DateTimeUtil.parseLocalTime;
-import static ru.javawebinar.topjava.util.ValidationUtil.assureIdConsistent;
-import static ru.javawebinar.topjava.util.ValidationUtil.checkNew;
 
 @Controller
-public class JspMealController {
-    private static final Logger log = LoggerFactory.getLogger(MealRestController.class);
+@RequestMapping("/meals")
+public class JspMealController extends AbstractMealController {
 
-    @Autowired
-    private MealService service;
-
-    @GetMapping("/meals")
+    @GetMapping
     public String getAll(Model model) {
-        int userId = SecurityUtil.authUserId();
-        log.info("getAll for user {}", userId);
-
-        var meals = MealsUtil.getTos(service.getAll(userId), SecurityUtil.authUserCaloriesPerDay());
-
+        var meals = super.getAll();
         model.addAttribute("meals", meals);
-        return "meals";
+        return "/meals";
     }
 
     @GetMapping("/filter")
-    public String getFiltered(HttpServletRequest request, Model model) {
+    public String getBetween(HttpServletRequest request, Model model) {
         LocalDate startDate = parseLocalDate(request.getParameter("startDate"));
         LocalDate endDate = parseLocalDate(request.getParameter("endDate"));
         LocalTime startTime = parseLocalTime(request.getParameter("startTime"));
         LocalTime endTime = parseLocalTime(request.getParameter("endTime"));
 
-        int userId = SecurityUtil.authUserId();
-        log.info("getBetween dates({} - {}) time({} - {}) for user {}", startDate, endDate, startTime, endTime, userId);
-
-        var mealsDateFiltered = service.getBetweenInclusive(startDate, endDate, userId);
-        var meals = MealsUtil.getFilteredTos(mealsDateFiltered, SecurityUtil.authUserCaloriesPerDay(), startTime, endTime);
+        var meals = super.getBetween(startDate, startTime, endDate, endTime);
 
         model.addAttribute("meals", meals);
         return "meals";
@@ -69,11 +51,9 @@ public class JspMealController {
 
     @GetMapping("/update")
     public String getUpdated(HttpServletRequest request, Model model) {
-        int userId = SecurityUtil.authUserId();
         int id = getId(request);
-        log.info("get meal {} for user {}", id, userId);
 
-        var meal = service.get(id, userId);
+        var meal = super.get(id);
 
         model.addAttribute("meal", meal);
         return "mealForm";
@@ -81,32 +61,25 @@ public class JspMealController {
 
     @GetMapping("/delete")
     public String delete(HttpServletRequest request) {
-        int userId = SecurityUtil.authUserId();
         int id = getId(request);
-        log.info("get meal {} for user {}", id, userId);
 
-        service.delete(id, userId);
+        super.delete(id);
 
-        return "redirect:meals";
+        return "redirect:/meals";
     }
 
-    @PostMapping("/meals")
+    @PostMapping("")
     public String saveMeal(HttpServletRequest request) {
-        int userId = SecurityUtil.authUserId();
         Meal meal = new Meal(
                 LocalDateTime.parse(request.getParameter("dateTime")),
                 request.getParameter("description"),
                 Integer.parseInt(request.getParameter("calories")));
         if (StringUtils.hasLength(request.getParameter("id"))) {
-            log.info("update {} for user {}", meal, userId);
-            assureIdConsistent(meal, getId(request));
-            service.update(meal, userId);
+            super.update(meal, getId(request));
         } else {
-            log.info("create {} for user {}", meal, userId);
-            checkNew(meal);
-            service.create(meal, userId);
+            super.create(meal);
         }
-        return "redirect:meals";
+        return "redirect:/meals";
     }
 
     private int getId(HttpServletRequest request) {
