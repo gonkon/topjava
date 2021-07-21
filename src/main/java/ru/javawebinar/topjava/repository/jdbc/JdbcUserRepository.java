@@ -27,7 +27,7 @@ public class JdbcUserRepository implements UserRepository {
     private static final BeanPropertyRowMapper<User> ROW_MAPPER = BeanPropertyRowMapper.newInstance(User.class);
 
     private static final ResultSetExtractor<List<User>> MAPPER_WITH_ROLES = rs -> {
-        Map<Integer, User> result = new HashMap<>();
+        Map<Integer, User> result = new LinkedHashMap<>();
         User user = new User();
         while (rs.next()) {
             Integer userId = rs.getInt("id");
@@ -37,6 +37,7 @@ public class JdbcUserRepository implements UserRepository {
             }
             if (rs.getString("role") != null) {
                 Role role = Role.valueOf(rs.getString("role"));
+                user = result.get(userId);
                 if (user.getRoles() == null) {
                     user.setRoles(Set.of(role));
                 } else {

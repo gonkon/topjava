@@ -13,10 +13,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.context.junit4.SpringRunner;
 import ru.javawebinar.topjava.ActiveDbProfileResolver;
-import ru.javawebinar.topjava.Profiles;
 import ru.javawebinar.topjava.TimingRules;
-
-import java.util.Arrays;
 
 import static org.junit.Assert.assertThrows;
 import static ru.javawebinar.topjava.util.ValidationUtil.getRootCause;
@@ -37,10 +34,6 @@ abstract public class AbstractServiceTest {
 
     @Rule
     public Stopwatch stopwatch = TimingRules.STOPWATCH;
-
-    public boolean isJdbc() {
-        return Arrays.stream(environment.getActiveProfiles()).anyMatch(profile -> profile.contains(Profiles.JDBC));
-    }
 
     //  Check root cause in JUnit: https://github.com/junit-team/junit4/pull/778
     protected <T extends Throwable> void validateRootCause(Class<T> rootExceptionClass, Runnable runnable) {

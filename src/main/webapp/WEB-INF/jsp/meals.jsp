@@ -2,16 +2,9 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="fn" uri="http://topjava.javawebinar.ru/functions" %>
-<%@ taglib prefix="fnjstl" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="spring" uri="http://www.springframework.org/tags" %>
-<c:set var="req" value="${pageContext.request}" />
-<c:set var="url">${req.requestURL}</c:set>
-<c:set var="uri" value="${req.requestURI}" />
 <html>
 <jsp:include page="fragments/headTag.jsp"/>
-<head>
-    <base href="${fnjstl:substring(url, 0, fnjstl:length(url) - fnjstl:length(uri))}${req.contextPath}/" />
-</head>
 <body>
 <jsp:include page="fragments/bodyHeader.jsp"/>
 <section>

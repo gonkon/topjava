@@ -13,6 +13,8 @@ import javax.validation.Validator;
 import java.util.Set;
 
 public class ValidationUtil {
+    private static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
     private ValidationUtil() {
     }
 
@@ -59,8 +61,6 @@ public class ValidationUtil {
     }
 
     public static <T> void validateEntity(T entity) {
-        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-
         Set<ConstraintViolation<T>> violations = validator.validate(entity);
         if (!violations.isEmpty()) {
             violations.forEach(element -> {

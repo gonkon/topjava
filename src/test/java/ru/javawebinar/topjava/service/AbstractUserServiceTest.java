@@ -1,6 +1,5 @@
 package ru.javawebinar.topjava.service;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
@@ -28,13 +27,6 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
     @Autowired
     private CacheManager cacheManager;
 
-    @Before
-    public void setup() {
-        if (!(cacheManager instanceof org.springframework.cache.support.NoOpCacheManager)) {
-            cacheManager.getCache("users").clear();
-        }
-    }
-
     @Test
     public void create() {
         User created = service.create(getNew());
@@ -42,6 +34,7 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
         User newUser = getNew();
         newUser.setId(newId);
         MATCHER.assertMatch(created, newUser);
+//        MATCHER.assertMatch(service.getAll(), admin, newUser, user, user_without_roles);
         MATCHER.assertMatch(service.get(newId), newUser);
     }
 
@@ -116,7 +109,6 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
 
     @Test
     public void createWithException() throws Exception {
-//        Assume.assumeFalse(isJdbc());
         validateRootCause(ConstraintViolationException.class, () -> service.create(new User(null, "  ", "mail@yandex.ru", "password", Role.USER)));
         validateRootCause(ConstraintViolationException.class, () -> service.create(new User(null, "User", "  ", "password", Role.USER)));
         validateRootCause(ConstraintViolationException.class, () -> service.create(new User(null, "User", "mail@yandex.ru", "  ", Role.USER)));
