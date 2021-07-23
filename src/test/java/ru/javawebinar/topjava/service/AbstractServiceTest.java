@@ -17,12 +17,9 @@ import static ru.javawebinar.topjava.util.ValidationUtil.getRootCause;
 })
 //@ExtendWith(SpringExtension.class)
 @ActiveProfiles(resolver = ActiveDbProfileResolver.class)
-abstract public class AbstractServiceTest {
-    @ClassRule
-    public static ExternalResource summary = TimingRules.SUMMARY;
-
-    @Rule
-    public Stopwatch stopwatch = TimingRules.STOPWATCH;
+@Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
+@ExtendWith(TimingExtension.class)
+public abstract class AbstractServiceTest {
 
     //  Check root cause in JUnit: https://github.com/junit-team/junit4/pull/778
     protected <T extends Throwable> void validateRootCause(Class<T> rootExceptionClass, Runnable runnable) {
