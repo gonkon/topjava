@@ -18,8 +18,12 @@ public class MealTestData {
     public static final int MEAL1_ID = START_SEQ + 2;
     public static final int ADMIN_MEAL_ID = START_SEQ + 9;
 
-    public static final String START_DATE_TIME = "2020-01-31T10:15:30";
-    public static final String END_DATE_TIME = "2020-02-03T22:00:00";
+//    public static final String START_DATE_TIME = "2020-01-31T10:15:30";
+//    public static final String END_DATE_TIME = "2020-02-03T22:00:00";
+    public static final String START_DATE = "2020-01-31";
+    public static final String END_DATE = "2020-02-03";
+    public static final String START_TIME = "10:15:30";
+    public static final String END_TIME = "22:00:00";
 
     public static final Meal meal1 = new Meal(MEAL1_ID, of(2020, Month.JANUARY, 30, 10, 0), "Завтрак", 500);
     public static final Meal meal2 = new Meal(MEAL1_ID + 1, of(2020, Month.JANUARY, 30, 13, 0), "Обед", 1000);

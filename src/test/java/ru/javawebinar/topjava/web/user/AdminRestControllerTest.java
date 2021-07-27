@@ -3,8 +3,10 @@ package ru.javawebinar.topjava.web.user;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import ru.javawebinar.topjava.MealTestData;
 import ru.javawebinar.topjava.UserTestData;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.service.UserService;
@@ -41,6 +43,18 @@ class AdminRestControllerTest extends AbstractControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(MATCHER.contentJson(user));
+    }
+
+    @Test
+    void getWithMeals() throws Exception {
+        MvcResult result = perform(MockMvcRequestBuilders.get(REST_URL + USER_ID + "/with-meals"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andReturn();
+        var actual = JsonUtil.readValue(result.getResponse().getContentAsString(), User.class);
+        MATCHER.assertMatch(actual, UserTestData.user);
+        MealTestData.MATCHER.assertMatch(actual.getMeals(), MealTestData.meals);
     }
 
     @Test

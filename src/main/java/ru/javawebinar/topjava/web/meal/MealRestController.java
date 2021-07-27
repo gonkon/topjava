@@ -1,8 +1,7 @@
 package ru.javawebinar.topjava.web.meal;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.format.support.FormattingConversionServiceFactoryBean;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +11,9 @@ import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.to.MealTo;
 
 import java.net.URI;
-import java.time.LocalDateTime;
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @RestController
@@ -21,7 +22,7 @@ public class MealRestController extends AbstractMealController {
     static final String REST_URL = "/rest/meals";
 
     @Autowired
-    private FormattingConversionServiceFactoryBean conversionService;
+    ConversionService conversionService;
 
     @GetMapping
     public List<MealTo> getAll() {
@@ -29,15 +30,16 @@ public class MealRestController extends AbstractMealController {
     }
 
     @GetMapping("/getBetween")
-    public List<MealTo> getBetween(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDateTime,
-                                   @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDateTime) {
-        if (startDateTime == null && endDateTime == null) {
+    public List<MealTo> getBetween(@RequestParam(required = false) String startDateStr, @RequestParam(required = false) String endDateStr,
+                                   @RequestParam(required = false) String startTimeStr, @RequestParam(required = false) String endTimeStr) throws ParseException {
+
+        if (startDateStr == null && endDateStr == null && startTimeStr == null && endTimeStr == null) {
             return super.getAll();
         } else {
-            var startDate = startDateTime.toLocalDate();
-            var endDate = endDateTime.toLocalDate();
-            var startTime = startDateTime.toLocalTime();
-            var endTime = endDateTime.toLocalTime();
+            var startDate = conversionService.convert(startDateStr, LocalDate.class);
+            var endDate = conversionService.convert(endDateStr, LocalDate.class);
+            var startTime = conversionService.convert(startTimeStr, LocalTime.class);
+            var endTime = conversionService.convert(endTimeStr, LocalTime.class);
             return super.getBetween(startDate, startTime, endDate, endTime);
         }
     }

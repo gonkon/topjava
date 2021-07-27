@@ -2,7 +2,6 @@ package ru.javawebinar.topjava.web.meal;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.support.FormattingConversionServiceFactoryBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -15,7 +14,7 @@ import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.SecurityUtil;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -31,9 +30,6 @@ class MealRestControllerTest extends AbstractControllerTest {
     @Autowired
     private MealService mealService;
 
-    @Autowired
-    private FormattingConversionServiceFactoryBean conversionService;
-
     @Test
     void getAll() throws Exception {
         perform(MockMvcRequestBuilders.get(REST_URL))
@@ -42,14 +38,25 @@ class MealRestControllerTest extends AbstractControllerTest {
                 .andExpect(MATCHER_TO.contentJson(MealsUtil.getTos(meals, SecurityUtil.authUserCaloriesPerDay())));
     }
 
+//    @Test
+//    void getBetween() throws Exception {
+//        perform(MockMvcRequestBuilders.get(REST_URL + "/getBetween?startDateTime=" + START_DATE_TIME + "&endDateTime=" + END_DATE_TIME))
+//                .andExpect(status().isOk())
+//                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+//                .andExpect(MATCHER_TO.contentJson(MealsUtil.getFilteredTos(List.of(meal7, meal6, meal5, meal4), SecurityUtil.authUserCaloriesPerDay(),
+//                        LocalDateTime.parse(START_DATE_TIME).toLocalTime(), LocalDateTime.parse(END_DATE_TIME).toLocalTime())));
+//    }
+
     @Test
     void getBetween() throws Exception {
-        perform(MockMvcRequestBuilders.get(REST_URL + "/getBetween?startDateTime=" + START_DATE_TIME + "&endDateTime=" + END_DATE_TIME))
+        perform(MockMvcRequestBuilders.get(REST_URL + "/getBetween?startDateStr=" + START_DATE + "&endDateStr=" + END_DATE +
+                "&startTimeStr=" + START_TIME + "&endTimeStr=" + END_TIME))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(MATCHER_TO.contentJson(MealsUtil.getFilteredTos(List.of(meal7, meal6, meal5, meal4), SecurityUtil.authUserCaloriesPerDay(),
-                        LocalDateTime.parse(START_DATE_TIME).toLocalTime(), LocalDateTime.parse(END_DATE_TIME).toLocalTime())));
+                        LocalTime.parse(START_TIME), LocalTime.parse(END_TIME))));
     }
+
 
     @Test
     void get() throws Exception {
