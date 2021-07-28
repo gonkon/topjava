@@ -9,6 +9,6 @@ public class DateConverter implements Converter<String, LocalDate> {
 
     @Override
     public LocalDate convert(String s) {
-        return LocalDate.parse(s);
+        return DateTimeUtil.parseLocalDate(s);
     }
 }

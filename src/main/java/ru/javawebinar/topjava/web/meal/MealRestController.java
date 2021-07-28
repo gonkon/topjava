@@ -11,7 +11,6 @@ import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.to.MealTo;
 
 import java.net.URI;
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -30,16 +29,12 @@ public class MealRestController extends AbstractMealController {
     }
 
     @GetMapping("/getBetween")
-    public List<MealTo> getBetween(@RequestParam(required = false) String startDateStr, @RequestParam(required = false) String endDateStr,
-                                   @RequestParam(required = false) String startTimeStr, @RequestParam(required = false) String endTimeStr) throws ParseException {
+    public List<MealTo> getBetween(@RequestParam(required = false) LocalDate startDate, @RequestParam(required = false) LocalDate endDate,
+                                   @RequestParam(required = false) LocalTime startTime, @RequestParam(required = false) LocalTime endTime) {
 
-        if (startDateStr == null && endDateStr == null && startTimeStr == null && endTimeStr == null) {
+        if (startDate == null && endDate == null && startTime == null && endTime == null) {
             return super.getAll();
         } else {
-            var startDate = conversionService.convert(startDateStr, LocalDate.class);
-            var endDate = conversionService.convert(endDateStr, LocalDate.class);
-            var startTime = conversionService.convert(startTimeStr, LocalTime.class);
-            var endTime = conversionService.convert(endTimeStr, LocalTime.class);
             return super.getBetween(startDate, startTime, endDate, endTime);
         }
     }
