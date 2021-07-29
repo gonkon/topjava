@@ -1,4 +1,4 @@
-Java Enterprise Online Project 
+~~Java Enterprise Online Project 
 ===============================
 Разработка полнофункционального Spring/JPA Enterprise приложения c авторизацией и правами доступа на основе ролей с использованием наиболее популярных инструментов и технологий Java: Maven, Spring MVC, Security, JPA(Hibernate), REST(Jackson), Bootstrap (css,js), datatables, jQuery + plugins, Java 8 Stream and Time API и хранением в базах данных Postgresql и HSQLDB.
 
@@ -226,3 +226,45 @@ Java Enterprise Online Project
 -  <a href="http://www.bookvoed.ru/book?id=639284">Редмонд Э.: Семь баз данных за семь недель. Введение в современные базы данных и идеологию NoSQL</a>
 -  <a href="http://www.ozon.ru/context/detail/id/3174887/">Brian Goetz: Java Concurrency in Practice</a>
 -  <a href="http://bookvoed.ru/book?id=2593572">G.L. McDowell: Cracking the Coding Interview</a>
+
+#### Запросы curl
+
+curl -X GET --location "http://localhost:8080/topjava/rest/meals" \
+-H "Accept: application/json"
+
+curl -X POST --location "http://localhost:8080/topjava/rest/meals" \
+-H "Content-Type: application/json" \
+-d "{
+\"id\": null,
+\"dateTime\": \"2021-07-26T20:00:00\",
+\"description\": \"Обед\",
+\"calories\": 1010
+}"
+
+curl -X GET --location "http://localhost:8080/topjava/rest/meals/getBetween" \
+-H "Accept: application/json"
+
+curl -X GET --location "http://localhost:8080/topjava/rest/meals/getBetween?startDate=2020-01-31&endDate=2020-02-03&startTime=10:15:30&endTime=22:00:00" \
+-H "Accept: application/json"
+
+curl -X GET --location "http://localhost:8080/topjava/rest/meals/getBetween?startDate=&startTime=" \
+-H "Accept: application/json"
+
+curl -X GET --location "http://localhost:8080/topjava/rest/meals/getBetween?startDate=2020-01-31&startTime=12:00:00" \
+-H "Accept: application/json"
+
+curl -X GET --location "http://localhost:8080/topjava/rest/meals/100002" \
+-H "Accept: application/json"
+
+curl -X PUT --location "http://localhost:8080/topjava/rest/meals/100002" \
+-H "Content-Type: application/json" \
+-d "{
+\"id\": 100002,
+\"dateTime\": \"2020-01-30T10:00:00\",
+\"description\": \"Ужин\",
+\"calories\": 1500
+}"
+
+curl -X DELETE --location "http://localhost:8080/topjava/rest/meals/100002" \
+-H "Accept: application/json"
+

@@ -26,8 +26,8 @@
     <bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
         <property name="converters">
             <list>
-                <bean class="ru.javawebinar.topjava.util.DateConverter" />
-                <bean class="ru.javawebinar.topjava.util.TimeConverter" />
+                <bean class="ru.javawebinar.topjava.convert.DateConverter" />
+                <bean class="ru.javawebinar.topjava.convert.TimeConverter" />
             </list>
         </property>
     </bean>

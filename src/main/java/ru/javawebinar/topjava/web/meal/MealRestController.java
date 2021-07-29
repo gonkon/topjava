@@ -1,7 +1,5 @@
 package ru.javawebinar.topjava.web.meal;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,18 +18,14 @@ import java.util.List;
 public class MealRestController extends AbstractMealController {
     static final String REST_URL = "/rest/meals";
 
-    @Autowired
-    ConversionService conversionService;
-
     @GetMapping
     public List<MealTo> getAll() {
         return super.getAll();
     }
 
-    @GetMapping("/getBetween")
-    public List<MealTo> getBetween(@RequestParam(required = false) LocalDate startDate, @RequestParam(required = false) LocalDate endDate,
-                                   @RequestParam(required = false) LocalTime startTime, @RequestParam(required = false) LocalTime endTime) {
-
+    @GetMapping("/between")
+    public List<MealTo> getBetween(@RequestParam(required = false) LocalDate startDate, @RequestParam(required = false) LocalTime startTime,
+                                   @RequestParam(required = false) LocalDate endDate, @RequestParam(required = false) LocalTime endTime) {
         if (startDate == null && endDate == null && startTime == null && endTime == null) {
             return super.getAll();
         } else {
